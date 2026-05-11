@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Babas - Futebol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 font-sans">
+
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <header class="bg-green-600 p-6 rounded-t-2xl text-center shadow-lg">
+            <h1 class="text-2xl font-bold uppercase tracking-wider">Próximo Jogo</h1>
+            <p class="text-green-100 mt-1 opacity-90">Organize o seu time com facilidade</p>
+        </header>
+
+        <!-- Informações do Jogo -->
+        <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-around text-sm">
+            <div class="text-center">
+                <i class="fas fa-calendar-day text-green-500 mb-1"></i>
+                <p>Quarta-feira</p>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-clock text-green-500 mb-1"></i>
+                <p>20:00</p>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-map-marker-alt text-green-500 mb-1"></i>
+                <p>Campo Local</p>
+            </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="bg-gray-800 p-6 shadow-md">
+            <label class="block text-sm font-medium mb-2">Seu Nome / Apelido</label>
+            <input type="text" id="playerName" placeholder="Ex: Uilian" 
+                   class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-green-500 mb-4 transition-all">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="addPlayer(true)" class="bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold transition-colors">
+                    <i class="fas fa-check mr-2"></i>VOU
+                </button>
+                <button onclick="addPlayer(false)" class="bg-red-600 hover:bg-red-500 py-3 rounded-lg font-bold transition-colors">
+                    <i class="fas fa-times mr-2"></i>NÃO VOU
+                </button>
+            </div>
+        </div>
+
+        <!-- Listas -->
+        <div class="mt-6 space-y-4">
+            <!-- Confirmados -->
+            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg">
+                <div class="bg-green-700 px-4 py-2 flex justify-between items-center">
+                    <h2 class="font-bold tracking-wide">CONFIRMADOS</h2>
+                    <span id="countGoing" class="bg-green-900 px-2 py-1 rounded-md text-xs font-bold">0</span>
+                </div>
+                <ul id="listGoing" class="divide-y divide-gray-700">
+                    <!-- Gerado via JS -->
+                </ul>
+            </div>
+
+            <!-- Ausentes -->
+            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg opacity-75">
+                <div class="bg-gray-700 px-4 py-2 flex justify-between items-center">
+                    <h2 class="font-bold tracking-wide">NÃO VÃO</h2>
+                    <span id="countNotGoing" class="bg-gray-900 px-2 py-1 rounded-md text-xs font-bold">0</span>
+                </div>
+                <ul id="listNotGoing" class="divide-y divide-gray-700">
+                    <!-- Gerado via JS -->
+                </ul>
+            </div>
+        </div>
+
+        <button onclick="clearList()" class="w-full mt-8 text-gray-500 text-xs hover:text-red-400 transition-colors uppercase tracking-widest">
+            <i class="fas fa-trash-alt mr-1"></i> Limpar Lista para Novo Jogo
+        </button>
+    </div>
+
+    <script>
+        let players = JSON.parse(localStorage.getItem('futebol_lista')) || [];
+
+        function render() {
+            const listGoing = document.getElementById('listGoing');
+            const listNotGoing = document.getElementById('listNotGoing');
+            const countGoing = document.getElementById('countGoing');
+            const countNotGoing = document.getElementById('countNotGoing');
+
+            listGoing.innerHTML = '';
+            listNotGoing.innerHTML = '';
+
+            const going = players.filter(p => p.status === true);
+            const notGoing = players.filter(p => p.status === false);
+
+            going.forEach(p => {
+                listGoing.innerHTML += `<li class="p-4 flex justify-between items-center animate-fadeIn">
+                    <span><i class="fas fa-tshirt text-green-500 mr-3"></i>${p.name}</span>
+                </li>`;
+            });
+
+            notGoing.forEach(p => {
+                listNotGoing.innerHTML += `<li class="p-4 flex justify-between items-center text-gray-400">
+                    <span><i class="fas fa-ban mr-3"></i>${p.name}</span>
+                </li>`;
+            });
+
+            countGoing.innerText = going.length;
+            countNotGoing.innerText = notGoing.length;
+
+            localStorage.setItem('futebol_lista', JSON.stringify(players));
+        }
+
+        function addPlayer(status) {
+            const nameInput = document.getElementById('playerName');
+            const name = nameInput.value.trim();
+
+            if (name === "") return alert("Por favor, digite seu nome!");
+
+            // Evita duplicados
+            const index = players.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+            if (index !== -1) players.splice(index, 1);
+
+            players.push({ name, status });
+            nameInput.value = '';
+            render();
+        }
+
+        function clearList() {
+            if (confirm("Deseja realmente apagar a lista atual?")) {
+                players = [];
+                render();
+            }
+        }
+
+        render();
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</body>
+</html>
